@@ -1,0 +1,102 @@
+@page "/event-details/{Id:int}"
+@inject NavigationManager Navigation
+@inject SessionStateService SessionState
+
+<PageTitle>Event Details & Registration</PageTitle>
+
+<div class="container">
+    @if (currentEvent != null)
+    {
+        <div class="event-details-card">
+            <h2>@currentEvent.Name</h2>
+            <p><strong>Date:</strong> @currentEvent.Date.ToShortDateString()</p>
+            <p><strong>Location:</strong> @currentEvent.Location</p>
+            <p><strong>Current Session User:</strong> @SessionState.Username</p>
+        </div>
+
+        <hr />
+
+        <div class="registration-section">
+            <h3>Event Registration Form</h3>
+            <EditForm Model="@registrationModel" OnValidSubmit="HandleValidSubmit">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="form-group">
+                    <label>Full Name:</label>
+                    <InputText class="form-control" @bind-Value="registrationModel.FullName" />
+                    <ValidationMessage For="@(() => registrationModel.FullName)" />
+                </div>
+
+                <div class="form-group">
+                    <label>Email Address:</label>
+                    <InputText class="form-control" @bind-Value="registrationModel.Email" />
+                    <ValidationMessage For="@(() => registrationModel.Email)" />
+                </div>
+
+                <button type="submit" class="btn btn-success mt-2">Register Now</button>
+            </EditForm>
+
+            @if (isSubmitted)
+            {
+                <div class="alert alert-success mt-3">
+                    Registration successful! Thank you, @registrationModel.FullName.
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="error">Event not found or invalid route path.</p>
+        <button class="btn btn-secondary" @onclick="GoBack">Back to Events</button>
+    }
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private class EventModel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public DateTime Date { get; set; }
+        public string Location { get; set; } = string.Empty;
+    }
+
+    private class RegistrationModel
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Name is required.")]
+        public string FullName { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Email is required.")]
+        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Invalid email format.")]
+        public string Email { get; set; } = string.Empty;
+    }
+
+    private EventModel? currentEvent;
+    private RegistrationModel registrationModel = new();
+    private bool isSubmitted = false;
+
+    protected override void OnInitialized()
+    {
+        // Mock data lookup
+        var events = new List<EventModel>
+        {
+            new EventModel { Id = 1, Name = "Tech Innovation Summit 2026", Date = new DateTime(2026, 11, 15), Location = "Riyadh, Saudi Arabia" },
+            new EventModel { Id = 2, Name = "Global Leadership Forum", Date = new DateTime(2026, 12, 05), Location = "Dubai, UAE" }
+        };
+
+        currentEvent = events.FirstOrDefault(e => e.Id == Id);
+    }
+
+    private void HandleValidSubmit()
+    {
+        isSubmitted = true;
+        SessionState.RegisterUser(registrationModel.FullName);
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/events");
+    }
+}

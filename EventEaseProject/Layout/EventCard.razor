@@ -1,0 +1,25 @@
+<div class="event-card @CardClass">
+    <h3>@EventName</h3>
+    <p><strong>Date:</strong> @EventDate.ToShortDateString()</p>
+    <p><strong>Location:</strong> @Location</p>
+    <button @onclick="NavigateToDetails" class="btn btn-primary">View Details</button>
+</div>
+
+@code {
+    [Parameter] public string EventName { get; set; } = string.Empty;
+    [Parameter] public DateTime EventDate { get; set; }
+    [Parameter] public string Location { get; set; } = string.Empty;
+    [Parameter] public int EventId { get; set; }
+
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
+
+    private string CardClass => EventDate < DateTime.Now ? "past-event" : "upcoming-event";
+
+    private void NavigateToDetails()
+    {
+        if (EventId > 0)
+        {
+            Navigation.NavigateTo($"/event-details/{EventId}");
+        }
+    }
+}

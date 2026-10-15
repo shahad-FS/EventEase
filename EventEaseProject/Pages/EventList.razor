@@ -1,0 +1,49 @@
+@page "/events"
+@inject NavigationManager Navigation
+
+<PageTitle>EventEase - Event List</PageTitle>
+
+<div class="container">
+    <h2>Upcoming Corporate & Social Events</h2>
+    
+    <div class="search-box">
+        <input type="text" placeholder="Filter by event name..." @bind="searchTerm" @bind:event="oninput" />
+    </div>
+
+    <div class="event-grid">
+        @if (FilteredEvents != null && FilteredEvents.Any())
+        {
+            @foreach (var ev in FilteredEvents)
+            {
+                <EventCard EventId="ev.Id" EventName="ev.Name" EventDate="ev.Date" Location="ev.Location" />
+            }
+        }
+        else
+        {
+            <p>No events found matching your search.</p>
+        }
+    </div>
+</div>
+
+@code {
+    private string searchTerm = string.Empty;
+
+    private class EventModel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public DateTime Date { get; set; }
+        public string Location { get; set; } = string.Empty;
+    }
+
+    private List<EventModel> events = new()
+    {
+        new EventModel { Id = 1, Name = "Tech Innovation Summit 2026", Date = new DateTime(2026, 11, 15), Location = "Riyadh, Saudi Arabia" },
+        new EventModel { Id = 2, Name = "Global Leadership Forum", Date = new DateTime(2026, 12, 05), Location = "Dubai, UAE" }
+    };
+
+    private IEnumerable<EventModel> FilteredEvents => 
+        string.IsNullOrWhiteSpace(searchTerm) 
+            ? events 
+            : events.Where(e => e.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+}
